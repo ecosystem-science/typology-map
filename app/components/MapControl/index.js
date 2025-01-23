@@ -13,4 +13,5 @@ export default styled(props => <Button plain {...props} />)`
   &:hover {
     background: ${({ active, theme }) =>
     active ? theme.global.colors.brand : 'white'};
+  }
 `;

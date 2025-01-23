@@ -48,7 +48,6 @@ const IconImg = styled(Img)`
 
 function IconRealm({ realmId, type }) {
   if (!ICONS[realmId]) return null;
-  /* eslint-disable react/no-array-index-key */
   return (
     <StyledBox>
       {Object.values(ICONS[realmId]).map((icon, index) => (
@@ -62,7 +61,6 @@ function IconRealm({ realmId, type }) {
       ))}
     </StyledBox>
   );
-  /* eslint-enable react/no-array-index-key */
 }
 
 IconRealm.propTypes = {

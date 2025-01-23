@@ -11,6 +11,7 @@ import NavAncestor from 'components/NavAncestor';
 import IconRealm from 'components/IconRealm';
 import styled from 'styled-components';
 import { Box } from 'grommet';
+import { DEFAULT_LOCALE } from 'i18n';
 
 const Styled = styled(Box)``;
 const TitleWrap = styled.h1`
@@ -46,7 +47,7 @@ function TypologyHeader({ typology, ancestors, locale }) {
       />
       <TitleWrap>
         <Id>{typology.id}</Id>
-        <Title>{typology.title[locale]}</Title>
+        <Title>{typology.title[locale] || typology.title[DEFAULT_LOCALE]}</Title>
       </TitleWrap>
       {ancestors && (
         <Box margin={{ bottom: 'small' }} responsive={false}>
@@ -56,7 +57,7 @@ function TypologyHeader({ typology, ancestors, locale }) {
               type={a.typologyType}
               onClick={() => a.nav()}
               id={a.id}
-              name={a.title[locale]}
+              name={a.title[locale] || a.title[DEFAULT_LOCALE]}
             />
           ))}
         </Box>

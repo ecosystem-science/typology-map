@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const H5 = styled.h5`
-  margin-large: ${({ theme }) => theme.global.edgeSize.medium};
+  margin-top: ${({ theme }) => theme.global.edgeSize.medium};
   margin-bottom: ${({ theme }) => theme.global.edgeSize.xsmall};
 `;
 

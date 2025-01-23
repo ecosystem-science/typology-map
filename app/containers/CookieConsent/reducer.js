@@ -7,7 +7,7 @@
  *
  */
 
-import produce from 'immer';
+import { produce } from 'immer';
 import {
   COOKIECONSENT_CHECKED,
   SET_COOKIECONSENT,
@@ -22,7 +22,6 @@ export const initialState = {
   showCookieConsent: null,
 };
 
-/* eslint-disable default-case, no-param-reassign */
 const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {

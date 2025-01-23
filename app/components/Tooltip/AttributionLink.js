@@ -13,7 +13,6 @@ export default styled(p => (
     {...p}
   />
 ))`
-  text-decoration: none;
   font-size: ${({ theme }) => theme.text.xxsmall.size};
   line-height: ${({ theme }) => theme.text.xxsmall.height};
   color: ${({ theme }) => theme.global.colors.text.light};

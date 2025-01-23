@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
-import { filter } from 'lodash/collection';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { filter, groupBy } from 'lodash/collection';
 import styled from 'styled-components';
 
-import { Button, Box, Text, ResponsiveContext, Layer } from 'grommet';
-import { Menu, Search as SearchIcon } from 'components/Icons';
+import { Button, Box, Text, ResponsiveContext } from 'grommet';
+import { Search as SearchIcon, Menu } from 'components/Icons';
 
-import { selectRouterPath } from 'containers/App/selectors';
+import { selectRouterPath, selectLocale } from 'containers/App/selectors';
 import {
   navigate,
   navigateHome,
@@ -21,18 +21,30 @@ import { PRIMARY, SECONDARY } from 'containers/App/constants';
 import { PAGES, ICONS, ROUTES } from 'config';
 
 import Img from 'components/Img';
-import LocaleToggle from 'containers/LocaleToggle';
 import Search from 'containers/Search';
 
 import { getHeaderHeight, isMinSize, isMaxSize } from 'utils/responsive';
 
 import commonMessages from 'messages';
 
+import DropMenu from './DropMenu';
+import DropMenuLocale from './DropMenuLocale';
+import DropMenuMobile from './DropMenuMobile';
 import NavBar from './NavBar';
+import Secondary from './Secondary';
+
 // prettier-ignore
 const Brand = styled(props => <Button plain color="white" {...props} />)`
-  /* responsive height */
   height: ${getHeaderHeight('small')}px;
+  color: ${({ theme }) => theme.global.colors.white};
+  background: transparent;
+  &:hover {
+    background: ${({ theme }) => theme.global.colors.brand};
+  }
+  &:focus {
+    background: ${({ theme, active }) =>
+    active ? 'transparent' : theme.global.colors['brand-dark']};
+  }
   @media (min-width: ${({ theme }) => theme.sizes.medium.minpx}) {
     padding-right: ${({ theme }) => theme.global.edgeSize.small};
     height: ${getHeaderHeight('medium')}px;
@@ -46,15 +58,6 @@ const Brand = styled(props => <Button plain color="white" {...props} />)`
   }
   @media (min-width: ${({ theme }) => theme.sizes.xxlarge.minpx}) {
     height: ${getHeaderHeight('xxlarge')}px;
-  }
-  color: ${({ theme }) => theme.global.colors.white};
-  background: transparent;
-  &:hover {
-    background: ${({ theme }) => theme.global.colors.brand};
-  }
-  &:focus {
-    background: ${({ theme, active }) =>
-    active ? 'transparent' : theme.global.colors['brand-dark']};
   }
 `;
 
@@ -110,7 +113,7 @@ const NavPrimary = styled(props => <Box direction="row" {...props} />)`
   }
 `;
 const NavSecondary = styled(props => (
-  <Box {...props} direction="row" gap="small" basis="1/2" />
+  <Box {...props} direction="row" basis="1/2" />
 ))``;
 const NavSearch = styled(props => (
   <Box {...props} direction="row" basis="1/2" align="center" />
@@ -131,27 +134,19 @@ const NavSearchSmall = styled(p => (
 const MenuButton = styled(props => <Button plain {...props} fill="vertical" />)`
   width: 100%;
   text-align: center;
-  &:hover {
-    background: ${({ theme }) => theme.global.colors.brand};
-  }
+  &:hover,
   &:focus {
-    background: ${({ theme }) => theme.global.colors.brand};
+    background: ${({ theme }) => theme.global.colors.hover};
   }
 `;
 const SearchButton = styled(props => <Button plain {...props} />)`
   text-align: center;
   border-radius: 9999px;
   padding: ${({ theme }) => theme.global.edgeSize.xsmall};
-  &:hover {
-    background: ${({ theme }) => theme.global.colors.brand};
-  }
+  &:hover,
   &:focus {
-    background: ${({ theme }) => theme.global.colors.brand};
+    background: ${({ theme }) => theme.global.colors.hover};
   }
-`;
-
-const MenuOpen = styled(Menu)`
-  transform: rotate(90deg);
 `;
 
 // prettier-ignore
@@ -186,26 +181,6 @@ const Primary = styled(props => (
     height: ${getHeaderHeight('xxlarge')}px;
   }
 `;
-// prettier-ignore
-const Secondary = styled(props => <Button {...props} plain />)`
-  padding:
-    ${({ theme }) => theme.global.edgeSize.xxsmall}
-    ${({ theme }) => theme.global.edgeSize.small};
-  color: ${({ theme }) => theme.global.colors.white};
-  text-decoration: ${({ active }) => (active ? 'underline' : 'none')};
-  background: transparent;
-  &:hover {
-    text-decoration: underline;
-  }
-  &:focus {
-    text-decoration: underline;
-  }
-  @media (min-width: ${({ theme }) => theme.sizes.large.minpx}) {
-    padding: 0 ${({ theme }) => theme.global.edgeSize.small};
-    padding-right: ${({ theme, last }) =>
-    last ? 0 : theme.global.edgeSize.small};
-  }
-`;
 
 const IconImg = styled(Img)`
   vertical-align: middle;
@@ -229,25 +204,40 @@ const IconImgWrap = styled.div`
 const PrimaryLabel = styled(props => (
   <Box {...props} justify="center" fill />
 ))``;
+const SecondaryLabel = styled(p => <Text {...p} size="medium" />)`
+  color: ${({ theme }) => theme.global.colors.white};
+`;
 
 const pagesArray = Object.keys(PAGES).map(key => ({
   key,
   ...PAGES[key],
 }));
 
-function Header({ nav, navHome, navPage, path }) {
+function Header({ nav, navHome, onNavPage, path, intl }) {
   const [showSearch, setShowSearch] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
+  const { locale } = intl;
+  const paths = path.split('/').filter(p => p !== locale && p !== '');
+  let contentType = 'home';
+  let contentId;
+  if (paths.length > 1) {
+    // we have a page
+    contentType = paths[0];
+    contentId = paths[1];
+  } else {
+    contentId = paths[0];
+    contentType = contentId;
+  };
 
-  const paths = path.split('/');
-  const contentType = paths[0] === '' ? paths[1] : paths[0];
-  const contentId =
-    paths[0] === ''
-      ? paths.length > 1 && paths[2]
-      : paths.length > 0 && paths[1];
   const pagesPrimary = filter(pagesArray, p => p.nav === PRIMARY);
   const pagesSecondary = filter(pagesArray, p => p.nav === SECONDARY);
-  const pagesOther = filter(pagesArray, p => p.nav !== PRIMARY);
+  const pagesSecondaryUngrouped = filter(pagesSecondary, p => !p.group);
+  const pagesSecondaryGrouped = groupBy(filter(pagesSecondary, p => !!p.group), p => p.group);
+
+  const secondaryActive =
+    contentType === 'page' && pagesSecondary && pagesSecondary.find(p => p.key === contentId);
+
+  const secondaryActiveId = secondaryActive && (secondaryActive.group || secondaryActive.key);
+
   return (
     <ResponsiveContext.Consumer>
       {size => (
@@ -261,10 +251,9 @@ function Header({ nav, navHome, navPage, path }) {
               <BrandWrap>
                 <Brand
                   onClick={() => {
-                    setShowMenu(false);
                     navHome();
                   }}
-                  active={contentType === ''}
+                  active={contentType === 'home'}
                   label={
                     <Box direction="row" fill="vertical" align="center">
                       <LogoWrap>
@@ -281,10 +270,7 @@ function Header({ nav, navHome, navPage, path }) {
             {(isMinSize(size, 'large') || !showSearch) && (
               <NavPrimary>
                 <Primary
-                  onClick={() => {
-                    setShowMenu(false);
-                    nav(ROUTES.EXPLORE);
-                  }}
+                  onClick={() => nav(ROUTES.EXPLORE)}
                   label={
                     <PrimaryLabel
                       gap={isMinSize(size, 'large') ? 'xsmall' : 'hair'}
@@ -303,10 +289,7 @@ function Header({ nav, navHome, navPage, path }) {
                   active={contentType === ROUTES.EXPLORE}
                 />
                 <Primary
-                  onClick={() => {
-                    setShowMenu(false);
-                    nav(ROUTES.ANALYSE);
-                  }}
+                  onClick={() => nav(ROUTES.ANALYSE)}
                   label={
                     <PrimaryLabel
                       gap={isMinSize(size, 'large') ? 'xsmall' : 'hair'}
@@ -324,61 +307,78 @@ function Header({ nav, navHome, navPage, path }) {
                   }
                   active={contentType === ROUTES.ANALYSE}
                 />
-                {isMinSize(size, 'medium') &&
-                  pagesPrimary.map(p => (
-                    <Primary
-                      key={p.key}
-                      onClick={() => navPage(p.key)}
-                      label={
-                        <PrimaryLabel
-                          gap={isMinSize(size, 'large') ? 'xsmall' : 'hair'}
+                {isMinSize(size, 'medium') && pagesPrimary.map(p => (
+                  <Primary
+                    key={p.key}
+                    onClick={() => onNavPage(p.key)}
+                    label={
+                      <PrimaryLabel
+                        gap={isMinSize(size, 'large') ? 'xsmall' : 'hair'}
+                      >
+                        <IconImgWrap>
+                          <IconImgHelper />
+                          <IconImg src={p.icon} alt="" />
+                        </IconImgWrap>
+                        <Text
+                          size={
+                            isMinSize(size, 'medium') ? 'medium' : 'xxsmall'
+                          }
                         >
-                          <IconImgWrap>
-                            <IconImgHelper />
-                            <IconImg src={p.icon} alt="" />
-                          </IconImgWrap>
-                          <Text
-                            size={
-                              isMinSize(size, 'medium') ? 'medium' : 'xxsmall'
-                            }
-                          >
-                            {commonMessages[`page_${p.key}`] && (
-                              <FormattedMessage
-                                {...commonMessages[`page_${p.key}`]}
-                              />
-                            )}
-                          </Text>
-                        </PrimaryLabel>
-                      }
-                      active={contentType === 'page' && contentId === p.key}
-                    />
-                  ))}
+                          {commonMessages[`page_${p.key}`] && (
+                            <FormattedMessage
+                              {...commonMessages[`page_${p.key}`]}
+                            />
+                          )}
+                        </Text>
+                      </PrimaryLabel>
+                    }
+                    active={contentType === 'page' && contentId === p.key}
+                  />
+                ))}
               </NavPrimary>
             )}
             {isMinSize(size, 'large') && (
               <Box
                 fill="vertical"
-                pad={{ horizontal: 'small' }}
                 margin={{ left: 'auto' }}
                 flex={{ shrink: 0 }}
               >
                 <NavSecondary justify="end">
-                  {pagesSecondary.map((p, index) => (
-                    <Secondary
-                      key={p.key}
-                      onClick={() => navPage(p.key)}
-                      label={
-                        <FormattedMessage
-                          {...commonMessages[`page_${p.key}`]}
+                  {pagesSecondaryGrouped && (
+                    <Box direction="row">
+                      {Object.entries(pagesSecondaryGrouped).map(([group, pages]) => (
+                        <DropMenu
+                          key={group}
+                          active={secondaryActiveId === group}
+                          dropPages={pages}
+                          label={intl.formatMessage(commonMessages[`navGroup_${group}`])}
+                          onNavPage={onNavPage}
+                          activePageId={contentId}
                         />
-                      }
-                      active={contentType === 'page' && contentId === p.key}
-                      last={index === pagesSecondary.length - 1}
-                    />
-                  ))}
-                  <LocaleToggle />
+                      ))}
+                    </Box>
+                  )}
+                  {pagesSecondaryUngrouped && (
+                    <Box direction="row">
+                      {pagesSecondaryUngrouped.map(p => (
+                        <Secondary
+                          key={p.key}
+                          onClick={() => onNavPage(p.key)}
+                          label={
+                            <SecondaryLabel>
+                              <FormattedMessage
+                                {...commonMessages[`page_${p.key}`]}
+                              />
+                            </SecondaryLabel>
+                          }
+                          active={secondaryActiveId === p.key}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                  <DropMenuLocale locale={locale} />
                 </NavSecondary>
-                <NavSearch justify="end">
+                <NavSearch justify="end" pad={{ horizontal: 'small' }}>
                   {!showSearch && (
                     <SearchButton
                       icon={<SearchIcon color="white" />}
@@ -398,110 +398,37 @@ function Header({ nav, navHome, navPage, path }) {
                 fill={showSearch ? true : 'vertical'}
                 flex={{ grow: 0 }}
               >
-                {!showSearch && (
-                  <Box
-                    flex={false}
-                    style={{
-                      width: isMaxSize(size, 'small') ? '40px' : '50px',
-                    }}
-                  >
-                    <MenuButton
-                      onClick={() => {
-                        setShowMenu(false);
-                        setShowSearch(!showSearch);
-                      }}
-                      label={<SearchIcon color="white" size="medium" />}
-                    />
-                  </Box>
-                )}
-                {!showSearch && (
-                  <Box
-                    flex={false}
-                    style={{
-                      width: isMaxSize(size, 'small') ? '40px' : '50px',
-                    }}
-                  >
-                    <MenuButton
-                      plain
-                      onClick={() => {
-                        setShowSearch(false);
-                        setShowMenu(!showMenu);
-                      }}
-                      label={
-                        showMenu ? (
-                          <MenuOpen color="white" />
-                        ) : (
-                          <Menu color="white" />
-                        )
-                      }
-                    />
-                  </Box>
-                )}
                 {showSearch && (
                   <NavSearchSmall>
                     <Search onClose={() => setShowSearch(false)} stretch />
                   </NavSearchSmall>
                 )}
+                {!showSearch && (
+                  <Box
+                    flex={false}
+                    style={{
+                      width: isMaxSize(size, 'small') ? '40px' : '50px',
+                    }}
+                  >
+                    <MenuButton
+                      onClick={() => setShowSearch(!showSearch)}
+                      label={<SearchIcon color="white" size="medium" />}
+                    />
+                  </Box>
+                )}
+                {!showSearch && <DropMenuLocale locale={locale} />}
+                {!showSearch && (
+                  <DropMenuMobile
+                    onNavPage={onNavPage}
+                    navGroups={groupBy(
+                      pagesArray,
+                      option => option.mobileGroup,
+                    )}
+                  />
+                )}
               </Box>
             )}
           </NavBar>
-          {isMaxSize(size, 'medium') && showMenu && (
-            <Layer
-              full="horizontal"
-              margin={{ top: `${getHeaderHeight(size)}px` }}
-              onClickOutside={() => setShowMenu(false)}
-              responsive={false}
-              modal={false}
-              animate={false}
-              position="top"
-              style={{ zIndex: 1300 }}
-            >
-              <Box
-                background="brand-2"
-                elevation="medium"
-                style={{ borderTop: '1px solid white' }}
-                pad={{ top: 'small', bottom: 'medium' }}
-              >
-                {isMinSize(size, 'medium') &&
-                  pagesOther.map(p => (
-                    <Secondary
-                      key={p.key}
-                      onClick={() => {
-                        setShowMenu(false);
-                        navPage(p.key);
-                      }}
-                      label={
-                        <Text size="medium">
-                          <FormattedMessage
-                            {...commonMessages[`page_${p.key}`]}
-                          />
-                        </Text>
-                      }
-                      active={contentType === 'page' && contentId === p.key}
-                    />
-                  ))}
-                {isMaxSize(size, 'small') &&
-                  pagesArray.map(p => (
-                    <Secondary
-                      key={p.key}
-                      onClick={() => {
-                        setShowMenu(false);
-                        navPage(p.key);
-                      }}
-                      label={
-                        <Text size="xsmall">
-                          <FormattedMessage
-                            {...commonMessages[`page_${p.key}`]}
-                          />
-                        </Text>
-                      }
-                      active={contentType === 'page' && contentId === p.key}
-                    />
-                  ))}
-                <LocaleToggle />
-              </Box>
-            </Layer>
-          )}
         </>
       )}
     </ResponsiveContext.Consumer>
@@ -511,13 +438,15 @@ function Header({ nav, navHome, navPage, path }) {
 Header.propTypes = {
   nav: PropTypes.func,
   navHome: PropTypes.func,
-  navPage: PropTypes.func,
+  onNavPage: PropTypes.func,
   path: PropTypes.string,
-  intl: intlShape.isRequired,
+  locale: PropTypes.string,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
   path: state => selectRouterPath(state),
+  locale: state => selectLocale(state),
 });
 
 export function mapDispatchToProps(dispatch) {
@@ -532,11 +461,8 @@ export function mapDispatchToProps(dispatch) {
       dispatch(resetGroupsQueryNav());
       dispatch(navigateHome());
     },
-    navPage: id => dispatch(navigatePage(id)),
+    onNavPage: id => dispatch(navigatePage(id)),
   };
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(injectIntl(Header));
+export default connect(mapStateToProps, mapDispatchToProps)(injectIntl(Header));

@@ -42,7 +42,7 @@ const Style = createGlobalStyle`
     font-weight: 400 !important;
   }
 
-  #ll-map .leaflet-draw-tooltip:before {
+  #ll-map .leaflet-draw-tooltip::before {
   	border-right-color: #333333;
   }
 
@@ -56,7 +56,7 @@ const Style = createGlobalStyle`
     font-weight: 400 !important;
   }
 
-  #ll-map .leaflet-error-draw-tooltip:before {
+  #ll-map .leaflet-error-draw-tooltip::before {
   	border-right-color: #8D0202;
   }
 

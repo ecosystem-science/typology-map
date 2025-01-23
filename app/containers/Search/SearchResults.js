@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { Box } from 'grommet';
 
 import commonMessages from 'messages';
@@ -99,7 +99,7 @@ SearchResults.propTypes = {
   onSelect: PropTypes.func,
   activeResult: PropTypes.number,
   maxResult: PropTypes.number,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(SearchResults);

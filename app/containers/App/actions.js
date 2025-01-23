@@ -20,11 +20,11 @@ import { ROUTES } from 'config';
 import {
   CHANGE_LOCALE,
   NAVIGATE,
-  LOAD_TYPOLOGY,
-  TYPOLOGY_REQUESTED,
-  TYPOLOGY_LOAD_SUCCESS,
-  TYPOLOGY_LOAD_ERROR,
-  TYPOLOGY_READY,
+  LOAD_CONFIG,
+  CONFIG_REQUESTED,
+  CONFIG_LOAD_SUCCESS,
+  CONFIG_LOAD_ERROR,
+  CONFIG_READY,
   QUERY_GROUPS,
   GROUPS_QUERIED,
   GROUPS_QUERY_SUCCESS,
@@ -95,41 +95,41 @@ export function navigateHome(reset = true) {
  * Load the typology config data, this action starts the request saga
  *
  */
-export function loadTypologyConfig(key) {
+export function loadConfig(key) {
   return {
-    type: LOAD_TYPOLOGY,
+    type: LOAD_CONFIG,
     key,
   };
 }
 
-export function setTypologyLoadSuccess(key, data, time) {
+export function setConfigLoadSuccess(key, data, time) {
   return {
-    type: TYPOLOGY_LOAD_SUCCESS,
+    type: CONFIG_LOAD_SUCCESS,
     data,
     key,
     time,
   };
 }
 
-export function setTypologyRequested(key, time) {
+export function setConfigRequested(key, time) {
   return {
-    type: TYPOLOGY_REQUESTED,
+    type: CONFIG_REQUESTED,
     key,
     time,
   };
 }
 
-export function setTypologyLoadError(error, key) {
+export function setConfigLoadError(error, key) {
   return {
-    type: TYPOLOGY_LOAD_ERROR,
+    type: CONFIG_LOAD_ERROR,
     error,
     key,
   };
 }
 
-export function setTypologyReady(key, time) {
+export function setConfigReady(key, time) {
   return {
-    type: TYPOLOGY_READY,
+    type: CONFIG_READY,
     key,
     time,
   };

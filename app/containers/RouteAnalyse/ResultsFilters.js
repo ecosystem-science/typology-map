@@ -9,9 +9,10 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { Box, Text, Button } from 'grommet';
-import { FormattedMessage, intlShape, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { GROUP_LAYER_PROPERTIES } from 'config';
+import { DEFAULT_LOCALE } from 'i18n';
 
 import { getRegionFeatureTitle } from 'containers/Map/utils';
 
@@ -110,7 +111,7 @@ export function ResultsFilters({
             <Text truncate>{getOpenArea(area)}</Text>
           )}
           {queryType === 'region' && (
-            <Text>{getRegionFeatureTitle(activeRegion)}</Text>
+            <Text>{getRegionFeatureTitle(activeRegion, locale)}</Text>
           )}
         </FieldWrap>
       </AsideNavSection>
@@ -147,7 +148,7 @@ export function ResultsFilters({
             <Active>
               <LabelWrap align="center">
                 <Id>{realmObject.id}</Id>
-                <Title>{realmObject.title[locale]}</Title>
+                <Title>{realmObject.title[locale] || realmObject.title[DEFAULT_LOCALE]}</Title>
               </LabelWrap>
             </Active>
           </FieldWrap>
@@ -160,7 +161,7 @@ export function ResultsFilters({
             <Active>
               <LabelWrap align="center">
                 <Id>{biomeObject.id}</Id>
-                <Title>{biomeObject.title[locale]}</Title>
+                <Title>{biomeObject.title[locale] || biomeObject.title[DEFAULT_LOCALE]}}</Title>
               </LabelWrap>
             </Active>
           </FieldWrap>
@@ -209,7 +210,7 @@ ResultsFilters.propTypes = {
   enableAreaUpdate: PropTypes.func,
   enableFilterUpdate: PropTypes.func,
   activeRegion: PropTypes.object,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 // export default RouteExplore;

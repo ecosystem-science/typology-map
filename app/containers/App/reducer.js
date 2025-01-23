@@ -7,13 +7,18 @@
  *
  */
 
-import produce from 'immer';
-import { TYPOLOGY, PAGES } from 'config';
+import { produce } from 'immer';
+import { LOCATION_CHANGE } from 'redux-first-history';
+import {
+  CONFIG,
+  PAGES,
+  ROUTES,
+} from 'config';
 import { appLocales } from 'i18n';
 import {
-  TYPOLOGY_REQUESTED,
-  TYPOLOGY_LOAD_SUCCESS,
-  TYPOLOGY_LOAD_ERROR,
+  CONFIG_REQUESTED,
+  CONFIG_LOAD_SUCCESS,
+  CONFIG_LOAD_ERROR,
   GROUPS_QUERIED,
   GROUPS_QUERY_SUCCESS,
   GROUPS_QUERY_ERROR,
@@ -29,7 +34,6 @@ import {
   SET_ANALYSE_PANEL,
 } from './constants';
 
-/* eslint-disable no-param-reassign */
 const locales = appLocales.reduce((memo, locale) => {
   memo[locale] = null;
   return memo;
@@ -43,6 +47,7 @@ const initialContent = {
   realms: {},
   biomes: {},
   groups: {},
+  faqs: {},
 };
 
 const initialGroupsByArea = {
@@ -55,23 +60,22 @@ const initialGroupsByArea = {
 
 // The initial state of the App
 export const initialState = {
-  /* eslint-disable no-param-reassign */
-  typologyConfig: Object.keys(TYPOLOGY).reduce((memo, key) => {
+  config: Object.keys(CONFIG).reduce((memo, key) => {
     memo[key] = null;
     return memo;
   }, {}),
   // record request time
-  typologyConfigRequested: Object.keys(TYPOLOGY).reduce((memo, key) => {
+  configRequested: Object.keys(CONFIG).reduce((memo, key) => {
     memo[key] = null;
     return memo;
   }, {}),
   // record return time
-  typologyConfigReady: Object.keys(TYPOLOGY).reduce((memo, key) => {
+  configReady: Object.keys(CONFIG).reduce((memo, key) => {
     memo[key] = null;
     return memo;
   }, {}),
   // // record error time
-  // typologyConfigError: TYPOLOGY.reduce((memo, resource, key) => {
+  // configError: CONFIG.reduce((memo, resource, key) => {
   //   memo[key] = false;
   //   return memo;
   // }, {}),
@@ -91,22 +95,43 @@ export const initialState = {
   queryRegionsActive: false,
   queryType: null,
   analysePanelOpen: true,
+  // the last location to go back to when closing routes
+  closeTarget: {
+    pathname: '',
+    search: '',
+    hash: '',
+  },
 };
 
-/* eslint-disable default-case, no-param-reassign */
 const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
-      case TYPOLOGY_REQUESTED:
-        draft.typologyConfigRequested[action.key] = action.time;
+      case LOCATION_CHANGE:
+        if (action.payload.location.pathname) {
+          const splitPath = action.payload.location.pathname.split('/');
+          // path is either /{LOCALE}/{ROUTE}/ or /{ROUTE}/
+          let route = splitPath.length > 2 ? splitPath[1] : '';
+          // check if we hace a locale
+          if (appLocales.indexOf(route) > -1) {
+            route = splitPath[2];
+          }
+          // last non-page for pages
+          if (route !== ROUTES.PAGE) {
+            draft.closeTarget = action.payload.location;
+          }
+        }
+        // draft.howToRead = false;
         break;
-      case TYPOLOGY_LOAD_SUCCESS:
-        draft.typologyConfig[action.key] = action.data;
-        draft.typologyConfigReady[action.key] = action.time;
+      case CONFIG_REQUESTED:
+        draft.configRequested[action.key] = action.time;
         break;
-      case TYPOLOGY_LOAD_ERROR:
-        console.log('Error loading typology data... giving up!', action.key);
-        draft.typologyConfigRequested[action.key] = action.time;
+      case CONFIG_LOAD_SUCCESS:
+        draft.config[action.key] = action.data;
+        draft.configReady[action.key] = action.time;
+        break;
+      case CONFIG_LOAD_ERROR:
+        // console.log('Error loading typology data... giving up!', action.key);
+        draft.configRequested[action.key] = action.time;
         break;
       case CONTENT_REQUESTED:
         if (draft.contentRequested[action.contentType])
@@ -125,10 +150,7 @@ const appReducer = (state = initialState, action) =>
           };
         break;
       case CONTENT_LOAD_ERROR:
-        console.log(
-          'Error loading content ... giving up!',
-          `${action.contentType}/${action.key}`,
-        );
+        // console.log('Error loading content ... giving up!',`${action.contentType}/${action.key}`);
         if (draft.contentRequested[action.contentType])
           draft.contentRequested[action.contentType][action.key] = {
             [action.locale]: action.time,
@@ -168,10 +190,7 @@ const appReducer = (state = initialState, action) =>
         draft.groupsByAreaReady.groups[action.layerType] = action.time;
         break;
       case GROUPS_QUERY_ERROR:
-        console.log(
-          'Error querying groups ... giving up!',
-          `${action.layerType}`,
-        );
+        // console.log('Error querying groups ... giving up!',`${action.layerType}`);
         draft.groupsByAreaQueried.groups[action.layerType] = action.time;
         break;
       case TOGGLE_DRAW:

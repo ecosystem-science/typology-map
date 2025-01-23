@@ -46,7 +46,7 @@ export function NavOptionGroup({
       myRefs.current[activeResult].focus();
     }
   }, [options, activeResult, focus]);
-  /* eslint-disable react/no-danger */
+
   return (
     <div>
       <NavOptionWrap>

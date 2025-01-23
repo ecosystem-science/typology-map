@@ -13,7 +13,7 @@ import CsvDownloader from 'react-csv-downloader';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import { Box, Text, Button, ResponsiveContext } from 'grommet';
-import { FormattedMessage, intlShape, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import quasiEquals from 'utils/quasi-equals';
 import { isMinSize } from 'utils/responsive';
@@ -100,7 +100,6 @@ export function Results({
   let { area, realm, biome, occurrence, regionId } = queryArgs;
 
   if (queriesReady && queryArgsFromQuery) {
-    /* eslint-disable prefer-destructuring */
     area = queryArgsFromQuery.area;
     regionId = queryArgsFromQuery.regionId;
     realm = queryArgsFromQuery.realm;
@@ -133,7 +132,7 @@ export function Results({
             align="center"
             gap="small"
           >
-            <SectionTitle aside style={{ margin: '30px 0' }}>
+            <SectionTitle variant="aside" style={{ margin: '30px 0' }}>
               <FormattedMessage {...messages.queryResults} />
             </SectionTitle>
             <Box flex={{ shrink: 0 }}>
@@ -329,7 +328,7 @@ Results.propTypes = {
   onCancelQuery: PropTypes.func,
   onSetActiveGroup: PropTypes.func,
   onSetInfoGroup: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
   realms: PropTypes.array,
   biomes: PropTypes.array,
   activeGroup: PropTypes.string,
@@ -364,10 +363,7 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 // export default RouteExplore;
 export default compose(withConnect)(injectIntl(Results));

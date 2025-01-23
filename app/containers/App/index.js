@@ -8,23 +8,20 @@
 
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { Helmet } from 'react-helmet';
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
-import { Grommet } from 'grommet';
-import theme from 'theme';
 
 import { useInjectReducer } from 'utils/injectReducer';
-import { useInjectSaga } from 'utils/injectSaga';
 
 import reducer from 'containers/App/reducer';
-import saga from 'containers/App/saga';
+
 import {
-  loadTypologyConfig,
+  loadConfig,
   dismissDisclaimer,
   navigatePage,
 } from 'containers/App/actions';
@@ -50,8 +47,6 @@ import CookieConsent from 'containers/CookieConsent';
 import { getHeaderHeight } from 'utils/responsive';
 
 import { ROUTES, PAGES } from 'config';
-import GlobalStyle from 'global-styles';
-import { appLocales } from 'i18n';
 
 import commonMessages from 'messages';
 
@@ -92,11 +87,12 @@ function App({
   activeGroup,
 }) {
   useInjectReducer({ key: 'global', reducer });
-  useInjectSaga({ key: 'default', saga });
+
   // kick off loading of typology configuration files
   useEffect(() => {
     onLoadTypology();
   }, []);
+
   let groupId;
   if (path.route === ROUTES.EXPLORE && path.level === 'groups') {
     groupId = path.id;
@@ -105,82 +101,61 @@ function App({
   }
 
   return (
-    <Grommet theme={theme}>
-      <AppWrapper>
-        <Helmet
-          titleTemplate={`%s - ${intl.formatMessage(commonMessages.appTitle)}`}
-          defaultTitle={intl.formatMessage(commonMessages.appTitle)}
-        >
-          <meta
-            name="description"
-            content={intl.formatMessage(commonMessages.metaDescription)}
+    <AppWrapper>
+      <Helmet
+        titleTemplate={`%s - ${intl.formatMessage(commonMessages.appTitle)}`}
+        defaultTitle={intl.formatMessage(commonMessages.appTitle)}
+      >
+        <meta
+          name="description"
+          content={intl.formatMessage(commonMessages.metaDescription)}
+        />
+      </Helmet>
+      <CookieConsent />
+      {showDisclaimer && (
+        <Disclaimer
+          onDismiss={() => onDismissDisclaimer()}
+          onMore={() => onNavigateAbout()}
+        />
+      )}
+      <Header />
+      <Content>
+        <MapContainer
+          groupId={groupId}
+          expandWithAside={path.route === ROUTES.ANALYSE}
+          mode={path.route}
+        />
+        <Routes>
+          <Route
+            path={`/:locale?/${ROUTES.HOME}`}
+            element={<RouteHome />}
           />
-        </Helmet>
-        <CookieConsent />
-        {showDisclaimer && (
-          <Disclaimer
-            onDismiss={() => onDismissDisclaimer()}
-            onMore={() => onNavigateAbout()}
+          <Route
+            path={`/:locale?/${ROUTES.EXPLORE}`}
+            element={<RouteExploreOverview />}
           />
-        )}
-        <Header />
-        <Content>
-          <MapContainer
-            groupId={groupId}
-            expandWithAside={path.route === ROUTES.ANALYSE}
-            mode={path.route}
+          <Route
+            path={`/:locale?/${ROUTES.EXPLORE}/:level/:id`}
+            element={<RouteExplore />}
           />
-          <Switch>
-            <Route
-              exact
-              path={[`/${ROUTES.HOME}`, `/:locale(${appLocales.join('|')})`]}
-              component={RouteHome}
-            />
-            <Route
-              exact
-              path={[
-                `/${ROUTES.EXPLORE}`,
-                `/:locale(${appLocales.join('|')})/${ROUTES.EXPLORE}`,
-              ]}
-              component={RouteExploreOverview}
-            />
-            <Route
-              exact
-              path={[
-                `/${ROUTES.EXPLORE}/:level/:id`,
-                `/:locale(${appLocales.join('|')})/${
-                  ROUTES.EXPLORE
-                }/:level/:id`,
-              ]}
-              component={RouteExplore}
-            />
-            <Route
-              exact
-              path={[
-                `/${ROUTES.ANALYSE}`,
-                `/:locale(${appLocales.join('|')})/${ROUTES.ANALYSE}`,
-              ]}
-              component={RouteAnalyse}
-            />
-            <Route
-              path={[
-                `/${ROUTES.PAGE}/:id`,
-                `/:locale(${appLocales.join('|')})/${ROUTES.PAGE}/:id`,
-              ]}
-              component={RoutePage}
-            />
-            <Route path="" component={NotFoundPage} />
-          </Switch>
-          {fullscreenImage && <FullscreenImage config={fullscreenImage} />}
-        </Content>
-        <GlobalStyle />
-      </AppWrapper>
-    </Grommet>
+          <Route
+            path={`/:locale?/${ROUTES.ANALYSE}`}
+            element={<RouteAnalyse />}
+          />
+          <Route
+            path={`/:locale?/${ROUTES.PAGE}/:id`}
+            element={<RoutePage />}
+          />
+          <Route path="" element={<NotFoundPage />} />
+        </Routes>
+        {fullscreenImage && <FullscreenImage config={fullscreenImage} />}
+      </Content>
+    </AppWrapper>
   );
 }
 
 // App.propTypes = {
-//   intl: intlShape.isRequired,
+//   intl: PropTypes.object.isRequired,
 // };
 
 // export default injectIntl(App);
@@ -193,7 +168,7 @@ App.propTypes = {
   showDisclaimer: PropTypes.bool,
   path: PropTypes.object,
   fullscreenImage: PropTypes.object,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
   activeGroup: PropTypes.string,
 };
 
@@ -207,18 +182,16 @@ const mapStateToProps = createStructuredSelector({
 export function mapDispatchToProps(dispatch) {
   return {
     onLoadTypology: () => {
-      dispatch(loadTypologyConfig('realms'));
-      dispatch(loadTypologyConfig('biomes'));
-      dispatch(loadTypologyConfig('groups'));
+      dispatch(loadConfig('realms'));
+      dispatch(loadConfig('biomes'));
+      dispatch(loadConfig('groups'));
+      // dispatch(loadConfig('faqs'));
     },
     onDismissDisclaimer: () => dispatch(dismissDisclaimer()),
     onNavigateAbout: () => dispatch(navigatePage(PAGES.about.path)),
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(injectIntl(App));

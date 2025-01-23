@@ -8,11 +8,7 @@ module.exports = {
     ],
     '@babel/preset-react',
   ],
-  plugins: [
-    'styled-components',
-    '@babel/plugin-proposal-class-properties',
-    '@babel/plugin-syntax-dynamic-import',
-  ],
+  plugins: ['styled-components'],
   env: {
     production: {
       only: ['app'],
@@ -23,11 +19,14 @@ module.exports = {
         '@babel/plugin-transform-react-constant-elements',
       ],
     },
+    /*
+    needed for testing (babel-plugin-dynamic-import-node and @babel/plugin-transform-modules-commonjs)
     test: {
       plugins: [
         '@babel/plugin-transform-modules-commonjs',
         'dynamic-import-node',
       ],
     },
+    */
   },
 };

@@ -8,13 +8,15 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Image } from 'grommet';
 import styled, { css } from 'styled-components';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { Expand, Contract } from 'components/Icons';
 
 import LoadingIndicator from 'components/LoadingIndicator';
 import ImageInfo from 'components/ImageInfo';
 import MapControl from 'components/MapControl';
 import { PATHS, DIAGRAM_NAME_ENDING } from 'config';
+import { DEFAULT_LOCALE } from 'i18n';
+
 import messages from './messages';
 
 const ImageWrap = styled(Box)`
@@ -96,7 +98,7 @@ function GroupDiagram({ group, intl, fullscreen, onFullscreen }) {
             image.caption[locale].trim() !== ''
               ? image.caption[locale]
               : intl.formatMessage(messages.caption, {
-                title: `${group.id} ${group.title[locale]}`,
+                title: `${group.id} ${group.title[locale] || group.title[DEFAULT_LOCALE]}`,
               })
           }
         />
@@ -123,7 +125,7 @@ GroupDiagram.propTypes = {
   group: PropTypes.object,
   fullscreen: PropTypes.bool,
   onFullscreen: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(GroupDiagram);

@@ -16,7 +16,7 @@ const StyledDrop = styled(Drop)`
   z-index: 1200;
   background: ${({ theme, color }) =>
     (color && theme.global.colors[color]) || 'white'};
-  &:after {
+  &::after {
     content: '';
     position: absolute;
     left: 0;

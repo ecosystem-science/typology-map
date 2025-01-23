@@ -5,7 +5,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { intlShape, injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import { Image, Box } from 'grommet';
 
@@ -62,7 +62,7 @@ export function SectionAnalysis({ intl, onClick }) {
 
 SectionAnalysis.propTypes = {
   onClick: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(SectionAnalysis);

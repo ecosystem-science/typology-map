@@ -8,7 +8,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Box, Heading, Paragraph, Text } from 'grommet';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import ButtonText from 'components/ButtonText';
 import AttributionLink from './AttributionLink';
@@ -93,7 +93,7 @@ export function MapAttribution({ onFeedbackClick, intl }) {
 
 MapAttribution.propTypes = {
   onFeedbackClick: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(MapAttribution);

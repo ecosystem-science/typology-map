@@ -65,12 +65,13 @@ export function CardChild({ onCardClick, label, typology, type, ...rest }) {
           <ButtonCard onClick={onCardClick} background="light-2">
             <Box fill align="start">
               {typology.image && (
-                <ImageWrap>
+                <ImageWrap fill>
                   <Image
                     fit="cover"
                     fill
-                    src={`${PATHS.IMAGES}/${typology.image.name ||
-                      typology.path}.jpg`}
+                    src={`${PATHS.IMAGES}/${
+                      typology.image.name || typology.path
+                    }.jpg`}
                     alignSelf={
                       typology.image.verticalAlign
                         ? mapVerticalAlignment(typology.image.verticalAlign)

@@ -12,11 +12,11 @@
 export const NAVIGATE = 'rle/App/NAVIGATE';
 export const CHANGE_LOCALE = 'app/App/CHANGE_LOCALE';
 
-export const LOAD_TYPOLOGY = 'rle/App/LOAD_TYPOLOGY';
-export const TYPOLOGY_REQUESTED = 'rle/App/TYPOLOGY_REQUESTED';
-export const TYPOLOGY_LOAD_ERROR = 'rle/App/TYPOLOGY_LOAD_ERROR';
-export const TYPOLOGY_LOAD_SUCCESS = 'rle/App/TYPOLOGY_LOAD_SUCCESS';
-export const TYPOLOGY_READY = 'rle/App/TYPOLOGY_READY';
+export const LOAD_CONFIG = 'rle/App/LOAD_CONFIG';
+export const CONFIG_REQUESTED = 'rle/App/CONFIG_REQUESTED';
+export const CONFIG_LOAD_ERROR = 'rle/App/CONFIG_LOAD_ERROR';
+export const CONFIG_LOAD_SUCCESS = 'rle/App/CONFIG_LOAD_SUCCESS';
+export const CONFIG_READY = 'rle/App/CONFIG_READY';
 
 export const QUERY_GROUPS = 'rle/App/QUERY_GROUPS';
 export const GROUPS_QUERIED = 'rle/App/GROUPS_QUERIED';

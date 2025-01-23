@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import PropTypes from 'prop-types';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Box, Button } from 'grommet';
 import { LOGOS } from 'config';
 import styled from 'styled-components';
@@ -83,7 +84,7 @@ export function Partners({ intl }) {
   );
 }
 Partners.propTypes = {
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(Partners);

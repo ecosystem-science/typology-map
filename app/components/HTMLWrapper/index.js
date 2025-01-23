@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import ReactHtmlParser from 'react-html-parser';
+import parse from 'html-react-parser';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { FormattedMessage } from 'react-intl';
@@ -26,67 +26,76 @@ const HTMLWrapper = ({
   truncate,
 }) => {
   const [show, setShow] = useState(false);
+  // console.log('HTMLWrapper', innerhtml, classNames, inject, needsConsentClass, consentPlaceholder)
   return (
     <div className={`rle-html ${classNames.join(' ')}`}>
       {!innerhtml && <LoadingIndicator />}
       {innerhtml &&
-        ReactHtmlParser(innerhtml, {
-          transform: (node, index) => {
+        parse(innerhtml, {
+          transform(reactNode, domNode, index) {
             if (
               truncate &&
               !show &&
-              node.parent &&
-              !node.parent.parent &&
+              domNode.parent &&
+              !domNode.parent.parent &&
               index > 0
             ) {
               return null;
             }
-            if (node.name === 'a' && node.attribs && node.attribs.href) {
-              if (node.attribs.href.indexOf('/explore') === 0) {
+            if (
+              domNode.name === 'a' &&
+              domNode.attribs &&
+              domNode.attribs.href
+            ) {
+              if (domNode.attribs.href.indexOf('/explore') === 0) {
                 return (
                   <a
                     key={index}
-                    href={node.attribs.href}
+                    href={domNode.attribs.href}
                     onClick={e => {
                       e.preventDefault();
                       onNavigate(
-                        node.attribs.href.replace('/explore', 'explore'),
+                        domNode.attribs.href.replace('/explore', 'explore'),
                       );
                     }}
                   >
-                    {node.children[0].data}
+                    {domNode.children[0].data}
                   </a>
                 );
               }
               return (
-                <a key={index} href={node.attribs.href} target="_blank">
-                  {node.children[0].data}
+                <a key={index} href={domNode.attribs.href} target="_blank">
+                  {domNode.children[0].data}
                 </a>
               );
             }
+            // when the inject tag is child of the current reactNode, replace the whole tag and it's children
             if (
               inject &&
               inject.length > 0 &&
-              node.name === 'p' &&
-              node.children &&
-              node.children.length === 1 &&
-              node.children[0]
+              inject.find(
+                ({ tag }) =>
+                  reactNode.props && reactNode.props.children === tag,
+              )
             ) {
               const inj = inject.find(
-                ({ tag }) => tag === node.children[0].data,
+                ({ tag }) => tag === reactNode.props.children,
               );
-              return inj ? <span key={index}>{inj.el}</span> : undefined;
+              if (inj && inj.el && typeof inj.el === 'function') {
+                return <span key={index}>{inj.el()}</span>;
+              }
+              return reactNode;
             }
             if (
               needsConsentClass &&
               consentPlaceholder &&
-              node.attribs &&
-              node.attribs.class &&
-              node.attribs.class.split(' ').indexOf(needsConsentClass) > -1
+              domNode.attribs &&
+              domNode.attribs.class &&
+              domNode.attribs.class.split(' ').indexOf(needsConsentClass) > -1
             ) {
               return <div key={index}>{consentPlaceholder}</div>;
             }
-            return undefined;
+            return reactNode;
           },
         })}
       {truncate && !show && (
@@ -118,9 +127,6 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  null,
-  mapDispatchToProps,
-);
+const withConnect = connect(null, mapDispatchToProps);
 
 export default compose(withConnect)(HTMLWrapper);

@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { compose } from 'redux';
-import { intlShape, injectIntl } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import styled, { withTheme } from 'styled-components';
 import L from 'leaflet';
 import 'leaflet-draw';
@@ -876,7 +876,7 @@ Map.propTypes = {
   size: PropTypes.string,
   mode: PropTypes.string,
   drawMode: PropTypes.string,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -920,9 +920,6 @@ function mapDispatchToProps(dispatch, props) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(withTheme(injectIntl(Map)));

@@ -6,7 +6,7 @@
 
 import React, { memo, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
@@ -128,7 +128,7 @@ HomePage.propTypes = {
   navPage: PropTypes.func,
   navAnalysis: PropTypes.func,
   locale: PropTypes.string,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -144,12 +144,6 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
-export default compose(
-  withConnect,
-  memo,
-)(injectIntl(HomePage));
+export default compose(withConnect, memo)(injectIntl(HomePage));

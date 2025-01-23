@@ -3,7 +3,7 @@
  * Map reducer
  *
  */
-import produce from 'immer';
+import { produce } from 'immer';
 
 import { GROUP_LAYER_OPTIONS } from 'config';
 
@@ -29,7 +29,6 @@ export const initialState = {
   regionHighlightId: null,
 };
 
-/* eslint-disable default-case, no-param-reassign */
 const mapReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
@@ -59,7 +58,7 @@ const mapReducer = (state = initialState, action) =>
         draft.layersReady[action.key] = action.time;
         break;
       case LAYER_LOAD_ERROR:
-        console.log('Error loading layer data... giving up!', action.key);
+        // console.log('Error loading layer data... giving up!', action.key);
         draft.layersRequested[action.key] = action.time;
         break;
     }

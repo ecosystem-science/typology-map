@@ -6,7 +6,7 @@
 
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
@@ -154,7 +154,7 @@ export function GroupInfo({
             inject={[
               {
                 tag: '[DIAGRAM]',
-                el: (
+                el: () => (
                   <GroupDiagram
                     group={group}
                     onFullscreen={() =>
@@ -181,7 +181,7 @@ GroupInfo.propTypes = {
   navRealm: PropTypes.func.isRequired,
   onSetFullscreenImage: PropTypes.func.isRequired,
   content: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
   onClose: PropTypes.func,
 };
 
@@ -210,9 +210,6 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(injectIntl(GroupInfo));

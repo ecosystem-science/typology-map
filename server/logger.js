@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 
 const chalk = require('chalk');
-const ip = require('ip');
+var os = require('os');
 
 const divider = chalk.gray('\n-----------------------------------');
 
@@ -23,13 +24,22 @@ const logger = {
       console.log(`Tunnel initialised ${chalk.green('✓')}`);
     }
 
+    var localAddresses = os.networkInterfaces();
+    const ipAddress = Object.keys(localAddresses).reduce((memo, network) => {
+      if (memo) return memo;
+      const ipv4Internal = localAddresses[network].find(
+        entry => entry.family === 'IPv4' && entry.internal,
+      );
+      return (ipv4Internal && ipv4Internal.address) || memo;
+    }, '');
+
     console.log(`
 ${chalk.bold('Access URLs:')}${divider}
 Localhost: ${chalk.magenta(`http://${host}:${port}`)}
-      LAN: ${chalk.magenta(`http://${ip.address()}:${port}`) +
-        (tunnelStarted
-          ? `\n    Proxy: ${chalk.magenta(tunnelStarted)}`
-          : '')}${divider}
+      LAN: ${chalk.magenta(`http://${ipAddress}:${port}`) +
+      (tunnelStarted
+        ? `\n    Proxy: ${chalk.magenta(tunnelStarted)}`
+        : '')}${divider}
 ${chalk.blue(`Press ${chalk.italic('CTRL-C')} to stop`)}
     `);
   },

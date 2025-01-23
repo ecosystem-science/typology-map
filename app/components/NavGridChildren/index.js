@@ -9,6 +9,8 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import { Box, Paragraph } from 'grommet';
+import { DEFAULT_LOCALE } from 'i18n';
+
 import H4 from 'components/styled/H4';
 import H5 from 'components/styled/H5';
 import CardChild from './CardChild';
@@ -27,7 +29,7 @@ function NavGridChildren({ type, items, itemClick, locale, parent }) {
           {...messages[`${type}Title`]}
           values={{
             no: items.length,
-            parent: parent.title[locale],
+            parent: parent.title[locale] || parent.title[DEFAULT_LOCALE],
           }}
         />
       </H4>
@@ -45,7 +47,7 @@ function NavGridChildren({ type, items, itemClick, locale, parent }) {
                 key={i.id}
                 onCardClick={() => itemClick(i.id)}
                 type={type}
-                label={i.title[locale]}
+                label={i.title[locale] || i.title[DEFAULT_LOCALE]}
                 typology={i}
               />
             ))}

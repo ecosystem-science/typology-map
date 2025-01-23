@@ -150,7 +150,7 @@ export const prepareCSVData = (
         ...groupData,
         ...stats,
         region_id: queryArgs.regionId,
-        region_title: getRegionFeatureTitle(activeRegion),
+        region_title: getRegionFeatureTitle(activeRegion, intl.locale),
       };
     }
     return {

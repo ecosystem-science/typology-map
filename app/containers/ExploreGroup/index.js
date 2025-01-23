@@ -7,7 +7,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
@@ -15,6 +15,7 @@ import styled from 'styled-components';
 import { Box, ResponsiveContext } from 'grommet';
 
 import { ROUTES } from 'config';
+import { DEFAULT_LOCALE } from 'i18n';
 
 import {
   selectBiome,
@@ -95,7 +96,7 @@ export function ExploreGroup({
           <Helmet>
             <title>
               {intl.formatMessage(messages.metaTitle, {
-                group: typology.title[locale],
+                group: typology.title[locale] || typology.title[DEFAULT_LOCALE],
               })}
             </title>
           </Helmet>
@@ -138,7 +139,7 @@ export function ExploreGroup({
                     inject={[
                       {
                         tag: '[DIAGRAM]',
-                        el: (
+                        el: () => (
                           <GroupDiagram
                             group={typology}
                             onFullscreen={() =>
@@ -151,7 +152,7 @@ export function ExploreGroup({
                   />
                   <AnalysisShortcut
                     type="group"
-                    name={typology.title[locale]}
+                    name={typology.title[locale] || typology.title[DEFAULT_LOCALE]}
                     onClick={() => navAnalysis(typology.biome)}
                   />
                 </TypologyContent>
@@ -167,7 +168,7 @@ export function ExploreGroup({
                     <AsideNavTypologySelected
                       level={0}
                       id={realm.id}
-                      name={realm.title[locale]}
+                      name={realm.title[locale] || realm.title[DEFAULT_LOCALE]}
                       onDismiss={() => navExplore()}
                       onTypologyClick={() => navRealm(biome.realm)}
                     />
@@ -182,7 +183,7 @@ export function ExploreGroup({
                     <AsideNavTypologySelected
                       level={1}
                       id={biome.id}
-                      name={biome.title[locale]}
+                      name={biome.title[locale] || biome.title[DEFAULT_LOCALE]}
                       onDismiss={() => navRealm(biome.realm)}
                       onTypologyClick={() => navBiome(biome.id)}
                     />
@@ -224,7 +225,7 @@ ExploreGroup.propTypes = {
   navAnalysis: PropTypes.func.isRequired,
   onSetFullscreenImage: PropTypes.func.isRequired,
   content: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -269,9 +270,6 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(injectIntl(ExploreGroup));

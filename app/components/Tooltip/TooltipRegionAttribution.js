@@ -1,5 +1,6 @@
 import React from 'react';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import PropTypes from 'prop-types';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Box, Paragraph, Heading } from 'grommet';
 
 import Tooltip from 'components/Tooltip';
@@ -41,7 +42,7 @@ function TooltipRegionAttribution({ intl }) {
 }
 
 TooltipRegionAttribution.propTypes = {
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(TooltipRegionAttribution);

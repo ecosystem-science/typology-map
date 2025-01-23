@@ -5,10 +5,10 @@
  */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { Box } from 'grommet';
-import Markdown from 'react-remarkable';
+import MarkdownWrapper from 'containers/MarkdownWrapper';
 
 import commonMessages from 'messages';
 
@@ -34,9 +34,9 @@ const Credit = styled(Caption)`
   padding: 0px 4px;
 `;
 
-const mdOptions = {
-  linkTarget: '_blank',
-};
+// const mdOptions = {
+//   linkTarget: '_blank',
+// };
 
 function ImageInfo({ caption, credit, intl, below }) {
   return (
@@ -44,16 +44,15 @@ function ImageInfo({ caption, credit, intl, below }) {
       <Styled align="end" below={below}>
         {caption && (
           <Caption className="rle-caption-markdown">
-            <Markdown options={mdOptions} source={caption} />
+            <MarkdownWrapper content={caption} />
           </Caption>
         )}
         {credit && (
           <Credit className="rle-caption-markdown">
-            <Markdown
-              options={mdOptions}
-              source={`${intl.formatMessage(
-                commonMessages.imageCreditBy,
-              )} ${credit}`}
+            <MarkdownWrapper
+              content={`${intl.formatMessage(
+                  commonMessages.imageCreditBy,
+                )} ${credit}`}
             />
           </Credit>
         )}
@@ -66,7 +65,7 @@ ImageInfo.propTypes = {
   credit: PropTypes.string,
   caption: PropTypes.string,
   below: PropTypes.bool,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(ImageInfo);

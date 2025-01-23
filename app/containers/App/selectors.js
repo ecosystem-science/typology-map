@@ -1,7 +1,7 @@
 /**
  * The global state selectors
  */
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 import { DEFAULT_LOCALE, appLocales } from 'i18n';
 
 import { groupBy } from 'lodash/collection';
@@ -69,7 +69,7 @@ export const selectRouterPathNamed = createSelector(
     const path = startsWith(location.pathname, '/')
       ? location.pathname.substr(1)
       : location.pathname;
-    const [route, level, id] = path.split('/');
+    const [route, level, id] = path.split('/').filter(p => appLocales.indexOf(p) === -1);
     return { route, level, id };
   },
 );
@@ -77,17 +77,20 @@ export const selectRouterPathNamed = createSelector(
 /**
  * Get the language locale
  */
-export const selectLocale = createSelector(
-  selectRouterPath,
-  path => {
-    if (path) {
-      const splitPath = path.split('/');
-      return splitPath.length > 1 && appLocales.indexOf(splitPath[1]) >= 0
-        ? splitPath[1]
-        : DEFAULT_LOCALE;
-    }
-    return DEFAULT_LOCALE;
-  },
+export const selectLocale = createSelector(selectRouterPath, path => {
+  if (path) {
+    const splitPath = path.split('/');
+    return splitPath.length > 1 && appLocales.indexOf(splitPath[1]) >= 0
+      ? splitPath[1]
+      : DEFAULT_LOCALE;
+  }
+  return DEFAULT_LOCALE;
+});
+
+
+export const selectCloseTarget = createSelector(
+  selectGlobal,
+  global => global.closeTarget,
 );
 
 export const selectDrawActive = createSelector(
@@ -103,27 +106,18 @@ export const selectFullscreenImage = createSelector(
   selectGlobal,
   global => global.fullscreenImage,
 );
-export const selectTypology = createSelector(
+export const selectConfig = createSelector(
   selectGlobal,
-  global => global.typologyConfig,
+  global => global.config,
 );
-export const selectTypologyByKey = createSelector(
+export const selectConfigByKey = createSelector(
   (state, key) => key,
-  selectTypology,
+  selectConfig,
   (key, data) => data[key],
 );
-export const selectRealms = createSelector(
-  state => selectTypologyByKey(state, 'realms'),
-  data => data,
-);
-export const selectBiomes = createSelector(
-  state => selectTypologyByKey(state, 'biomes'),
-  data => data,
-);
-export const selectGroups = createSelector(
-  state => selectTypologyByKey(state, 'groups'),
-  data => data,
-);
+export const selectRealms = state => selectConfigByKey(state, 'realms');
+export const selectBiomes = state => selectConfigByKey(state, 'biomes');
+export const selectGroups = state => selectConfigByKey(state, 'groups');
 
 export const selectRealm = createSelector(
   (state, id) => id,
@@ -201,23 +195,23 @@ export const selectGroupsForBiome = createSelector(
   },
 );
 
-const selectTypologyRequested = createSelector(
+const selectConfigRequested = createSelector(
   selectGlobal,
-  global => global.typologyConfigRequested,
+  global => global.configRequested,
 );
-export const selectTypologyRequestedByKey = createSelector(
+export const selectConfigRequestedByKey = createSelector(
   (state, key) => key,
-  selectTypologyRequested,
+  selectConfigRequested,
   (key, data) => data[key],
 );
 
-const selectTypologyReady = createSelector(
+const selectConfigReady = createSelector(
   selectGlobal,
-  global => global.typologyConfigReady,
+  global => global.configReady,
 );
-export const selectTypologyReadyByKey = createSelector(
+export const selectConfigReadyByKey = createSelector(
   (state, key) => key,
-  selectTypologyReady,
+  selectConfigReady,
   (key, data) => data[key],
 );
 

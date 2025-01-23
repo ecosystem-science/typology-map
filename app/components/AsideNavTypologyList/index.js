@@ -8,6 +8,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button } from 'grommet';
 import styled from 'styled-components';
+import { DEFAULT_LOCALE } from 'i18n';
 
 import { Info } from 'components/Icons';
 
@@ -58,7 +59,7 @@ function AsideNavTypologyList({
                   : selectItem(item.id)
               }
               id={item.id}
-              name={item.title[locale]}
+              name={item.title[locale] || item.title[DEFAULT_LOCALE]}
               stats={showAreas && item.stats ? item.stats : null}
               level={level}
               active={item.id === activeId}

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Button, Drop, Box, Text, ResponsiveContext, Layer } from 'grommet';
 import styled from 'styled-components';
 
@@ -60,7 +60,7 @@ const Select = styled(p => (
   <Box justify="between" direction="row" align="center" {...p} />
 ))``;
 
-const prepFeatures = layer => {
+const prepFeatures = (layer, locale) => {
   if (!layer) return [];
   return layer.data.features
     .filter(
@@ -72,7 +72,7 @@ const prepFeatures = layer => {
     )
     .map(feature => ({
       id: feature.properties[QUERY_REGIONS_LAYER.featureId],
-      title: getRegionFeatureTitle(feature),
+      title: getRegionFeatureTitle(feature, locale),
       type: feature.properties[QUERY_REGIONS_LAYER.featureTypeField],
     }))
     .sort((a, b) => (a.title > b.title ? 1 : -1));
@@ -81,13 +81,13 @@ export function RegionInput({
   regionId,
   onSubmit,
   layer,
-  // intl,
+  intl,
 }) {
   const [open, setOpen] = useState(null);
   const dropButtonRefADM = useRef(null);
   const dropButtonRefLME = useRef(null);
-
-  const options = prepFeatures(layer);
+  const { locale } = intl;
+  const options = prepFeatures(layer, locale);
   const optionsGrouped = groupBy(options, option => option.type);
   // console.log(optionsGrouped)
 
@@ -217,18 +217,15 @@ RegionInput.propTypes = {
   // onSetRegionHighlight: PropTypes.func,
   regionId: PropTypes.string,
   layer: PropTypes.object,
-  // intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
   layer: state => selectLayerByKey(state, QUERY_REGIONS_LAYER.key),
 });
 
-const withConnect = connect(
-  mapStateToProps,
-  null,
-);
+const withConnect = connect(mapStateToProps, null);
 
 // export default RouteExplore;
-export default compose(withConnect)(RegionInput);
+export default compose(withConnect)(injectIntl(RegionInput));
 // export default RegionInput;

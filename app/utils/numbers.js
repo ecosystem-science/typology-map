@@ -1,4 +1,4 @@
-import isNumber from 'is-number';
+import isNumber from 'utils/is-number';
 
 export const roundNumber = (value, digits = 1) => {
   const parsed = parseFloat(value);

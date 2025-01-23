@@ -1,20 +1,19 @@
 /**
  * Combine all reducers in this file and export the combined reducers.
+ * If we were to do this in store.js, reducers wouldn't be hot reloadable.
  */
-
 import { combineReducers } from 'redux';
-import { connectRouter } from 'connected-react-router';
 
-import history from 'utils/history';
+// import globalReducer from 'containers/App/reducer';
+import { routerReducer } from 'routerConfig';
 
 /**
- * Merges the main reducer with the router state and dynamically injected reducers
+ * Creates the main reducer with the asynchronously loaded ones
  */
-export default function createReducer(injectedReducers = {}) {
-  const rootReducer = combineReducers({
-    router: connectRouter(history),
-    ...injectedReducers,
+export default function createReducer(asyncReducers = {}) {
+  // router reducer is static, pass it in when adding asyncReducers
+  return combineReducers({
+    router: routerReducer,
+    ...asyncReducers,
   });
-
-  return rootReducer;
 }

@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
-import { intlShape, injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { ResponsiveContext, Box } from 'grommet';
 
 import {
@@ -110,7 +110,7 @@ export function RouteAnalyse({
                   justify="between"
                   align="center"
                 >
-                  <SectionTitle aside>
+                  <SectionTitle variant="aside">
                     <FormattedMessage {...messages.changeQueryLabel} />
                   </SectionTitle>
                 </Box>
@@ -156,7 +156,7 @@ RouteAnalyse.propTypes = {
   onQueryGroups: PropTypes.func,
   updateQuery: PropTypes.func,
   onOpenPanel: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
   onShowQueryRegions: PropTypes.func,
   queryType: PropTypes.string,
 };
@@ -180,10 +180,7 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 // export default RouteExplore;
 export default compose(withConnect)(injectIntl(RouteAnalyse));

@@ -6,13 +6,14 @@ import {
   call,
   fork,
 } from 'redux-saga/effects';
-import { push } from 'connected-react-router';
+import { push } from 'redux-first-history';
 import extend from 'lodash/extend';
 import 'whatwg-fetch';
 import 'url-search-params-polyfill';
 
+
 import {
-  TYPOLOGY,
+  CONFIG,
   MAX_LOAD_ATTEMPTS,
   PATHS,
   PAGES,
@@ -21,9 +22,10 @@ import {
 
 import { DEFAULT_LOCALE } from 'i18n';
 import { areaToPolygonWKT } from 'containers/Map/utils';
+import { startsWith } from 'utils/string';
 
 import {
-  LOAD_TYPOLOGY,
+  LOAD_CONFIG,
   LOAD_CONTENT,
   QUERY_GROUPS,
   NAVIGATE,
@@ -38,8 +40,8 @@ import {
 import {
   selectLocale,
   selectRouterLocation,
-  selectTypologyReadyByKey,
-  selectTypologyRequestedByKey,
+  selectConfigReadyByKey,
+  selectConfigRequestedByKey,
   selectContentReadyByKey,
   selectContentRequestedByKey,
   selectGroupsQueryReadyByType,
@@ -52,9 +54,9 @@ import {
 } from './selectors';
 
 import {
-  setTypologyRequested,
-  setTypologyLoadError,
-  setTypologyLoadSuccess,
+  setConfigRequested,
+  setConfigLoadError,
+  setConfigLoadSuccess,
   setContentRequested,
   setContentLoadError,
   setContentLoadSuccess,
@@ -94,7 +96,11 @@ function* navigateSaga({ location, args }) {
   // use as pathname and keep old search
   // note: location path is expected not to contain the locale
   if (typeof location === 'string') {
-    newPathname += location;
+    if (startsWith(location, '/')) {
+      newPathname = location;
+    } else {
+      newPathname += location;
+    }
   }
 
   // if location is object, use pathname and replace or extend search
@@ -103,7 +109,11 @@ function* navigateSaga({ location, args }) {
     typeof location === 'object' &&
     typeof location.pathname !== 'undefined'
   ) {
-    newPathname += location.pathname;
+    if (startsWith(location.pathname, '/')) {
+      newPathname = location.pathname;
+    } else {
+      newPathname += location.pathname;
+    }
   }
 
   // keep old pathname
@@ -111,7 +121,7 @@ function* navigateSaga({ location, args }) {
     newPathname = currentLocation.pathname;
   }
   // add locale
-  const path = myArgs.needsLocale
+  const path = (myArgs.needsLocale && !startsWith(newPathname, `/${currentLocale}`))
     ? `/${currentLocale}${newPathname}`
     : newPathname;
 
@@ -307,7 +317,7 @@ const autoRestart = (generator, handleError, maxTries = MAX_LOAD_ATTEMPTS) =>
  * @param {object} payload {key: data set key}
  */
 function* loadDataErrorHandler(err, { key }) {
-  yield put(setTypologyLoadError(err, key));
+  yield put(setConfigLoadError(err, key));
 }
 function* loadContentErrorHandler(err, { key, contentType, locale }) {
   yield put(setContentLoadError(err, contentType, locale, key));
@@ -316,33 +326,36 @@ function* queryGroupsErrorHandler(err, { layerType, args }) {
   yield put(setGroupsQueryError(err, layerType, args));
 }
 
-function* loadDataSaga({ key }) {
-  if (TYPOLOGY[key]) {
+function* loadConfigSaga({ key }) {
+  if (CONFIG[key]) {
     // requestedSelector returns the times that entities where fetched from the API
-    const requestedAt = yield select(selectTypologyRequestedByKey, key);
-    const ready = yield select(selectTypologyReadyByKey, key);
+    const requestedAt = yield select(selectConfigRequestedByKey, key);
+    const ready = yield select(selectConfigReadyByKey, key);
+
     // If haven't loaded yet, do so now.
     if (!requestedAt && !ready) {
-      const url = `${PATHS.DATA}/${TYPOLOGY[key].path}`;
+      const url = `${PATHS.DATA}/${CONFIG[key].path}`;
       try {
         // First record that we are requesting
-        yield put(setTypologyRequested(key, Date.now()));
+        yield put(setConfigRequested(key, Date.now()));
         const response = yield fetch(url);
+
         const responseOk = yield response.ok;
         if (responseOk && typeof response.json === 'function') {
           const json = yield response.json();
           if (json) {
-            yield put(setTypologyLoadSuccess(key, json, Date.now()));
+            yield put(setConfigLoadSuccess(key, json, Date.now()));
           } else {
-            yield put(setTypologyRequested(key, false));
+            yield put(setConfigRequested(key, false));
             throw new Error(response.statusText);
           }
         } else {
-          yield put(setTypologyRequested(key, false));
+          yield put(setConfigRequested(key, false));
           throw new Error(response.statusText);
         }
       } catch (err) {
-        yield put(setTypologyRequested(key, false));
+        console.log('error loading config/data: ', key, err);
+        yield put(setConfigRequested(key, false));
         // throw error
         throw new Error(err);
       }
@@ -352,7 +365,7 @@ function* loadDataSaga({ key }) {
 
 // key expected to include full path, for at risk data metric/country
 function* loadContentSaga({ key, contentType }) {
-  if (PAGES[key] || TYPOLOGY[contentType]) {
+  if (PAGES[key] || CONFIG[contentType]) {
     const requestedAt = yield select(selectContentRequestedByKey, {
       contentType,
       key,
@@ -369,8 +382,8 @@ function* loadContentSaga({ key, contentType }) {
         const page = PAGES[key];
         url = `${PATHS.CONTENT}/${currentLocale}/${page.path}/`;
       }
-      if (TYPOLOGY[contentType]) {
-        const typo = TYPOLOGY[contentType];
+      if (CONFIG[contentType]) {
+        const typo = CONFIG[contentType];
         url = `${PATHS.CONTENT}/${currentLocale}/${typo.contentPath}/${key}`;
       }
       if (url) {
@@ -406,6 +419,7 @@ function* loadContentSaga({ key, contentType }) {
             throw new Error(response.statusText);
           }
         } catch (err) {
+          console.log('error loading content: ', key, err);
           // throw error
           yield put(
             setContentRequested(contentType, currentLocale, key, false),
@@ -547,8 +561,8 @@ function* queryGroupsSaga({ args }) {
 export default function* defaultSaga() {
   // See example in containers/HomePage/saga.js
   yield takeEvery(
-    LOAD_TYPOLOGY,
-    autoRestart(loadDataSaga, loadDataErrorHandler, MAX_LOAD_ATTEMPTS),
+    LOAD_CONFIG,
+    autoRestart(loadConfigSaga, loadDataErrorHandler, MAX_LOAD_ATTEMPTS),
   );
   yield takeEvery(
     LOAD_CONTENT,

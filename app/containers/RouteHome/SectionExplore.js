@@ -5,7 +5,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import NavGridRealms from 'components/NavGridRealms';
 
@@ -53,7 +53,7 @@ export function SectionExplore({ intl, realms, navRealm, title, teaser }) {
 
 SectionExplore.propTypes = {
   navRealm: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
   title: PropTypes.string,
   teaser: PropTypes.string,
   realms: PropTypes.array,

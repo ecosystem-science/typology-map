@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Box, Layer, Paragraph, Heading } from 'grommet';
 import { navigatePage } from 'containers/App/actions';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -149,7 +149,7 @@ CookieConsent.propTypes = {
   cookieConsentApp: PropTypes.string,
   checked: PropTypes.bool,
   show: PropTypes.bool,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -167,9 +167,6 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(injectIntl(CookieConsent));

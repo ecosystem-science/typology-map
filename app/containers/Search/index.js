@@ -8,7 +8,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import styled from 'styled-components';
 import { Box, Text, Button, ResponsiveContext } from 'grommet';
@@ -208,7 +208,7 @@ Search.propTypes = {
   groups: PropTypes.array,
   realms: PropTypes.array,
   biomes: PropTypes.array,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapDispatchToProps = dispatch => ({
@@ -223,9 +223,6 @@ const mapStateToProps = state => ({
   realms: selectRealms(state),
 });
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(injectIntl(Search));

@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Button, Box, Text, ResponsiveContext, Drop, Layer } from 'grommet';
 import styled from 'styled-components';
+
+import { DEFAULT_LOCALE } from 'i18n';
 
 import { isMinSize, isMaxSize } from 'utils/responsive';
 
@@ -81,7 +83,7 @@ export function TypologyFilter({
             <Active>
               <LabelWrap align="center">
                 <IdActive>{active.id}</IdActive>
-                <Title>{active.title[locale]}</Title>
+                <Title>{active.title[locale] || active.title[DEFAULT_LOCALE]}</Title>
               </LabelWrap>
               <CloseButton
                 onClick={() => onDismiss()}
@@ -160,7 +162,7 @@ TypologyFilter.propTypes = {
   active: PropTypes.object,
   onDismiss: PropTypes.func,
   onSelect: PropTypes.func,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(TypologyFilter);

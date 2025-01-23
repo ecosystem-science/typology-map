@@ -26,7 +26,7 @@ const filterTaxonomy = (item, search) => {
     try {
       const regex = new RegExp(regExMultipleWords(search), 'i');
       return regex.test(cleanupSearchTarget(`${item.label} ${item.keywords}`));
-    } catch (e) {
+    } catch {
       return true;
     }
   }

@@ -42,7 +42,7 @@ export const PATHS = {
 export const MAX_LOAD_ATTEMPTS = 5;
 export const MAX_LOAD_ATTEMPTS_GROUPS = 2;
 
-export const TYPOLOGY = {
+export const CONFIG = {
   realms: {
     path: 'config/realms.json',
     contentPath: 'realms',
@@ -55,6 +55,9 @@ export const TYPOLOGY = {
     path: 'config/groups.json',
     contentPath: 'groups',
   },
+  faqs: {
+    path: 'config/faqs.json',
+  },
 };
 
 export const PAGES = {
@@ -63,38 +66,62 @@ export const PAGES = {
     nav: PRIMARY,
     icon: ICON_TYPOLOGY,
     backgroundImage: 'bg_home',
+    mobileGroup: 'main',
   },
   about: {
     path: 'about',
     nav: SECONDARY,
     backgroundImage: 'bg_home',
     partners: 'true',
+    group: 'about',
+    mobileGroup: 'about',
   },
   methods: {
     path: 'methods',
     nav: SECONDARY,
     backgroundImage: 'bg_home',
+    group: 'about',
+    mobileGroup: 'about',
+  },
+  faqs: {
+    type: 'faqs',
+    path: 'faqs',
+    nav: SECONDARY,
+    backgroundImage: 'bg_home',
+    group: 'about',
+    mobileGroup: 'about',
+  },
+  resources: {
+    path: 'resources',
+    nav: SECONDARY,
+    backgroundImage: 'bg_home',
+    group: 'about',
+    mobileGroup: 'about',
   },
   glossary: {
     path: 'glossary',
     nav: SECONDARY,
     backgroundImage: 'bg_home',
+    mobileGroup: 'other',
   },
   feedback: {
     path: 'feedback',
     nav: SECONDARY,
     backgroundImage: 'bg_home',
     needsConsent: 'true',
+    mobileGroup: 'other',
   },
   terms: {
     path: 'terms',
     nav: FOOTER,
     backgroundImage: 'bg_home',
+    mobileGroup: 'other',
   },
   privacy: {
     path: 'privacy',
     nav: FOOTER,
     backgroundImage: 'bg_home',
+    mobileGroup: 'other',
   },
 };
 
@@ -150,13 +177,20 @@ export const QUERY_REGIONS_LAYER = {
   type: 'topojson',
   path: 'analysis/lme_admin.topo.json',
   featureId: 'region_id',
-  featureTitle: 'title_EN',
+  featureTitle: {
+    en: 'title_EN',
+    es: 'title_EN',
+  },
   featureTypeField: 'regiontype',
   featureIgnoreField: 'ignore',
   featureType: {
     en: {
       LME: 'Marine Area',
       ADM: 'Country',
+    },
+    es: {
+      LME: 'Marine Area (ES)',
+      ADM: 'Country (ES)',
     },
   },
   style: {
@@ -198,8 +232,14 @@ export const MAP_OPTIONS = {
   maxZoom: 10,
   attributionControl: false,
   zoomControl: false,
-  maxBounds: [[-90, -315], [90, 315]],
-  defaultBounds: [[85, -180], [-85, 180]],
+  maxBounds: [
+    [-90, -315],
+    [90, 315],
+  ],
+  defaultBounds: [
+    [85, -180],
+    [-85, 180],
+  ],
 };
 
 export const GEOJSON = {

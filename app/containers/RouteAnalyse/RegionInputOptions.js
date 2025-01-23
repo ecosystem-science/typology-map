@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Button, Box, Text } from 'grommet';
 import styled from 'styled-components';
 
@@ -97,7 +97,7 @@ export function RegionInputOptions({
       try {
         const regex = new RegExp(regExMultipleWords(search), 'i');
         return regex.test(cleanupSearchTarget(option.title));
-      } catch (e) {
+      } catch {
         return true;
       }
     }
@@ -176,7 +176,7 @@ RegionInputOptions.propTypes = {
   options: PropTypes.array,
   dropWidth: PropTypes.string,
   inLayer: PropTypes.bool,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export function mapDispatchToProps(dispatch) {
@@ -185,10 +185,7 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  null,
-  mapDispatchToProps,
-);
+const withConnect = connect(null, mapDispatchToProps);
 
 // export default RouteExplore;
 export default compose(withConnect)(injectIntl(RegionInputOptions));

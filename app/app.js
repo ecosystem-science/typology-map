@@ -5,14 +5,15 @@
  */
 
 // Needed for redux-saga es6 generator support
-import '@babel/polyfill';
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 
 // Import all the third party stuff
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'connected-react-router';
-import history from 'utils/history';
+import { HistoryRouter as Router } from 'redux-first-history/rr6';
+// import history from 'utils/history';
 import 'sanitize.css/sanitize.css';
 
 // Import root app
@@ -23,46 +24,50 @@ import LanguageProvider from 'containers/LanguageProvider';
 // Import i18n messages
 import { translationMessages } from 'i18n';
 
-import configureStore from 'configureStore';
+// Import store and browserHistory
+import { store, history } from 'configureStore';
 
-// Load the favicon and the .htaccess file
-/* eslint-disable import/no-unresolved, import/extensions */
-import '!file-loader?name=[name].[ext]!./images/favicon.ico';
-import '!file-loader?name=[name].[ext]!./images/favicon-16x16.png';
-import '!file-loader?name=[name].[ext]!./images/favicon-32x32.png';
-import '!file-loader?name=[name].[ext]!./images/android-chrome-192x192.png';
-import '!file-loader?name=[name].[ext]!./images/android-chrome-256x256.png';
-import '!file-loader?name=[name].[ext]!./images/apple-touch-icon.png';
-import '!file-loader?name=[name].[ext]!./images/browserconfig.xml';
-import '!file-loader?name=[name].[ext]!./images/mstile-150x150.png';
-import '!file-loader?name=[name].[ext]!./images/safari-pinned-tab.svg';
-import 'file-loader?name=.htaccess!./.htaccess';
-/* eslint-enable import/no-unresolved, import/extensions */
+// Import ThemeProvider
+import { Grommet } from 'grommet';
+import GlobalStyle from 'global-styles';
+import { StyleSheetManager } from 'styled-components';
+import isPropValid from '@emotion/is-prop-valid';
 
-// Create redux store with history
-const initialState = {};
-const store = configureStore(initialState, history);
-const MOUNT_NODE = document.getElementById('app');
+import theme from './theme';
 
+const container = document.getElementById('app');
+const root = createRoot(container);
 const render = messages => {
-  ReactDOM.render(
+  root.render(
     <Provider store={store}>
       <LanguageProvider messages={messages}>
-        <ConnectedRouter history={history}>
-          <App />
-        </ConnectedRouter>
+        <Router history={history}>
+          <StyleSheetManager
+            enableVendorPrefixes
+            shouldForwardProp={(propName, target) => {
+              if (typeof target === 'string') {
+                // For HTML elements, forward the prop if it is a valid HTML attribute
+                return isPropValid(propName);
+              }
+              // For other elements, forward all props
+              return true;
+            }}
+          >
+            <Grommet theme={theme}>
+              <GlobalStyle />
+              <App />
+            </Grommet>
+          </StyleSheetManager>
+        </Router>
       </LanguageProvider>
     </Provider>,
-    MOUNT_NODE,
   );
 };
 
 if (module.hot) {
-  // Hot reloadable React components and translation json files
   // modules.hot.accept does not accept dynamic dependencies,
   // have to be constants at compile-time
-  module.hot.accept(['./i18n', 'containers/App'], () => {
-    ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+  module.hot.accept('./i18n', () => {
     render(translationMessages);
   });
 }
@@ -79,18 +84,4 @@ if (!window.Intl) {
     });
 } else {
   render(translationMessages);
-}
-
-// Install ServiceWorker and AppCache in the end since
-// it's not most important operation and if main code fails,
-// we do not want it installed
-// updating SW according to https://github.com/react-boilerplate/react-boilerplate/issues/2750#issuecomment-536215256
-if (process.env.NODE_ENV === 'production') {
-  const runtime = require('offline-plugin/runtime'); // eslint-disable-line global-require
-  runtime.install({
-    onUpdateReady: () => {
-      // Tells to new SW to take control immediately
-      runtime.applyUpdate();
-    },
-  });
 }

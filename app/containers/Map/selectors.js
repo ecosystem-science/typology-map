@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 import { initialState } from './reducer';
 
 /**
@@ -23,9 +23,8 @@ export const selectCountry = createSelector(
   selectDomain,
   domain => domain.country,
 );
-export const selectOpacity = createSelector(
-  selectDomain,
-  domain => parseFloat(domain.opacity),
+export const selectOpacity = createSelector(selectDomain, domain =>
+  parseFloat(domain.opacity),
 );
 export const selectBasemap = createSelector(
   selectDomain,

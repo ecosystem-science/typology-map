@@ -8,7 +8,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { Button, TextInput, Box } from 'grommet';
 import styled from 'styled-components';
 
@@ -92,7 +92,7 @@ AreaInput.propTypes = {
   onSubmit: PropTypes.func,
   onToggleDraw: PropTypes.func,
   area: PropTypes.string,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export function mapDispatchToProps(dispatch) {
@@ -101,10 +101,7 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  null,
-  mapDispatchToProps,
-);
+const withConnect = connect(null, mapDispatchToProps);
 
 // export default RouteExplore;
 export default compose(withConnect)(injectIntl(AreaInput));

@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import { Box, Button, Text, ResponsiveContext } from 'grommet';
-import { FormattedMessage, intlShape, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { isMinSize } from 'utils/responsive';
 
@@ -224,7 +224,7 @@ export function ConfigureArea({
 ConfigureArea.propTypes = {
   queryArgsFromQuery: PropTypes.object,
   queryArgs: PropTypes.object,
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
   updateQuery: PropTypes.func,
   onQueryGroups: PropTypes.func,
   onSubmit: PropTypes.func,
@@ -244,10 +244,7 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 // export default RouteExplore;
 export default compose(withConnect)(injectIntl(ConfigureArea));

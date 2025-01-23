@@ -7,13 +7,14 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import { Box, ResponsiveContext } from 'grommet';
 
 import { ROUTES } from 'config';
+import { DEFAULT_LOCALE } from 'i18n';
 
 import {
   selectContentByKey,
@@ -72,7 +73,7 @@ export function ExploreRealm({
           <Helmet>
             <title>
               {intl.formatMessage(messages.metaTitle, {
-                realm: typology.title[locale],
+                realm: typology.title[locale] || typology.title[DEFAULT_LOCALE],
               })}
             </title>
           </Helmet>
@@ -107,7 +108,7 @@ export function ExploreRealm({
                   )}
                   <AnalysisShortcut
                     type="realm"
-                    name={typology.title[locale]}
+                    name={typology.title[locale] || typology.title[DEFAULT_LOCALE]}
                     onClick={() => navAnalysis(typology.id)}
                   />
                 </TypologyContent>
@@ -122,7 +123,7 @@ export function ExploreRealm({
                   <AsideNavTypologySelected
                     level={0}
                     id={typology.id}
-                    name={typology.title[locale]}
+                    name={typology.title[locale] || typology.title[DEFAULT_LOCALE]}
                     onDismiss={() => navExplore()}
                     active
                   />
@@ -157,7 +158,7 @@ ExploreRealm.propTypes = {
   navExplore: PropTypes.func.isRequired,
   navAnalysis: PropTypes.func.isRequired,
   content: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -198,9 +199,6 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(injectIntl(ExploreRealm));
